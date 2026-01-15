@@ -6,11 +6,11 @@ A tiny floating-window game to train number-row symbol muscle memory.
 
 ```lua
 {
-  "YOUR_GH_USER/numrow.nvim",
+  "menisadi/numrow.nvim",
   cmd = "NumRow",
   opts = {
     rounds = 30,
-    feedback = "offset", -- or "warm"
+    show_hint_on_miss = false,
   },
 }
 ````
