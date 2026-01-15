@@ -1,0 +1,21 @@
+*numrow.txt*   Train number-row symbols
+
+INTRODUCTION                                            *numrow*
+numrow.nvim is a small game to train number-row symbol muscle memory.
+
+USAGE                                                   *numrow-usage*
+:NumRow
+    Open the menu and start a session.
+
+CONFIGURATION                                           *numrow-config*
+require('numrow').setup({opts})
+
+Options:
+  rounds (number)             Number of rounds. Default: 30
+  feedback ("offset"|"warm")  Feedback mode. Default: "offset"
+  show_hint_on_miss (bool)    Show the "Shift+<digit>" hint. Default: true
+  symbols (table)             Target symbols (layout dependent)
+  digits (table)              Digits aligned with symbols
+  win (table)                 Floating window options: width, height, border
+
+vim:tw=78:ts=8:ft=help:norl:
