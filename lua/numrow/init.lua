@@ -4,9 +4,9 @@
 local M = {}
 
 M.config = {
-	rounds = 30,
+	rounds = 10,
 	feedback = "offset", -- "offset" | "warm"
-	show_hint_on_miss = true, -- shows "Correct: Shift+<digit>"
+	show_hint_on_miss = false, -- shows "Correct: Shift+<digit>"
 	symbols = { "!", "@", "#", "$", "%", "^", "&", "*", "(", ")" }, -- US layout default
 	digits = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" }, -- aligned with symbols
 	win = {

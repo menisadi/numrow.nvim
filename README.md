@@ -7,13 +7,11 @@ A tiny floating-window game to train number-row symbol muscle memory.
 ```lua
 {
   "menisadi/numrow.nvim",
-  cmd = "NumRow",
-  opts = {
-    rounds = 30,
-    show_hint_on_miss = false,
-  },
+  cmd = "NumRow", -- lazy-load when you run :NumRow
 }
-````
+```
+
+No setup required. Run `:NumRow`.
 
 ## Usage
 

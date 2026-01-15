@@ -11,9 +11,9 @@ CONFIGURATION                                           *numrow-config*
 require('numrow').setup({opts})
 
 Options:
-  rounds (number)             Number of rounds. Default: 30
+  rounds (number)             Number of rounds. Default: 10
   feedback ("offset"|"warm")  Feedback mode. Default: "offset"
-  show_hint_on_miss (bool)    Show the "Shift+<digit>" hint. Default: true
+  show_hint_on_miss (bool)    Show the "Shift+<digit>" hint. Default: false
   symbols (table)             Target symbols (layout dependent)
   digits (table)              Digits aligned with symbols
   win (table)                 Floating window options: width, height, border
