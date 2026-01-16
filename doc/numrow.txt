@@ -16,6 +16,13 @@ Options:
   show_hint_on_miss (bool)    Show the "Shift+<digit>" hint. Default: false
   symbols (table)             Target symbols (layout dependent)
   digits (table)              Digits aligned with symbols
+  score (table)               Scoring options: base, penalty, min
+                              Default: { base = 10, penalty = 2, min = 1 }
   win (table)                 Floating window options: width, height, border
+
+SCORING                                                *numrow-scoring*
+Each round awards points based on attempts: score.base minus score.penalty per
+extra attempt, clamped to score.min. The final screen shows accuracy as
+correct/attempts.
 
 vim:tw=78:ts=8:ft=help:norl:

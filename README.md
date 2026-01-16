@@ -26,6 +26,7 @@ require("numrow").setup({
   show_hint_on_miss = true,
   symbols = { "!", "@", "#", "$", "%", "^", "&", "*", "(", ")" },
   digits  = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" },
+  score = { base = 10, penalty = 2, min = 1 },
   win = { width = 54, height = 8, border = "rounded" },
 })
 ```
@@ -33,3 +34,4 @@ require("numrow").setup({
 ### Notes
 
 * Defaults assume a US keyboard layout for number-row symbols.
+* Scoring awards attempt-based points per round and shows accuracy at the end.

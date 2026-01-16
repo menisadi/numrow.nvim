@@ -9,6 +9,11 @@ M.config = {
 	show_hint_on_miss = false, -- shows "Correct: Shift+<digit>"
 	symbols = { "!", "@", "#", "$", "%", "^", "&", "*", "(", ")" }, -- US layout default
 	digits = { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" }, -- aligned with symbols
+	score = {
+		base = 10,
+		penalty = 2,
+		min = 1,
+	},
 	win = {
 		width = 54,
 		height = 8,
@@ -85,6 +90,24 @@ local function offset_label(delta)
 	return ("You were %d %s to the %s."):format(n, key_word, dir)
 end
 
+local function score_for_attempts(score_cfg, attempts)
+	local cfg = score_cfg or {}
+	local base = cfg.base or 10
+	local penalty = cfg.penalty or 2
+	local min_points = cfg.min or 1
+	local points = base - penalty * (attempts - 1)
+	return math.max(min_points, points)
+end
+
+local function accuracy_stats(correct, misses)
+	local attempts = correct + misses
+	if attempts == 0 then
+		return 0, attempts
+	end
+	local accuracy = math.floor((correct / attempts) * 100 + 0.5)
+	return accuracy, attempts
+end
+
 local function render_menu(buf)
 	set_lines(buf, {
 		"NumRow",
@@ -111,18 +134,35 @@ local function is_esc(ch)
 	return ch == "\027" -- ESC
 end
 
+local function render_summary(buf, win, title, score, correct, misses)
+	local accuracy, attempts = accuracy_stats(correct, misses)
+	set_lines(buf, {
+		title,
+		"",
+		("Final score: %d"):format(score),
+		("Accuracy: %d%% (%d/%d)"):format(accuracy, correct, attempts),
+		("Misses: %d"):format(misses),
+		"",
+		"Press any key to close.",
+	})
+
+	getchar_str()
+	pcall(vim.api.nvim_win_close, win, true)
+end
+
 local function run_symbol_locator(cfg)
 	math.randomseed(os.time())
 
 	local buf, win = open_ui(cfg)
 
-	local score, misses = 0, 0
+	local score, misses, correct = 0, 0, 0
 
 	for round = 1, cfg.rounds do
 		local target_idx = math.random(1, #cfg.symbols)
 		local target = cfg.symbols[target_idx]
 
 		local feedback = ""
+		local round_attempts = 0
 		while true do
 			local header = ("NumRow — Symbol Locator   Round %d/%d   Score %d   Misses %d"):format(
 				round,
@@ -143,13 +183,23 @@ local function run_symbol_locator(cfg)
 
 			local ch = getchar_str()
 			if not ch or is_esc(ch) then
-				pcall(vim.api.nvim_win_close, win, true)
+				render_summary(buf, win, "NumRow — Session Ended", score, correct, misses)
 				return
 			end
 
+			round_attempts = round_attempts + 1
+
 			if ch == target then
-				score = score + 1
-				feedback = "✓ Correct!"
+				correct = correct + 1
+				local round_points = score_for_attempts(cfg.score, round_attempts)
+				score = score + round_points
+				feedback = ("✓ Correct! +%d"):format(round_points)
+				header = ("NumRow — Symbol Locator   Round %d/%d   Score %d   Misses %d"):format(
+					round,
+					cfg.rounds,
+					score,
+					misses
+				)
 				-- small “ack” redraw before next round (optional)
 				set_lines(buf, {
 					header,
@@ -187,17 +237,7 @@ local function run_symbol_locator(cfg)
 		end
 	end
 
-	set_lines(buf, {
-		"NumRow — Session Complete",
-		"",
-		("Final score: %d/%d"):format(score, cfg.rounds),
-		("Misses: %d"):format(misses),
-		"",
-		"Press any key to close.",
-	})
-
-	getchar_str()
-	pcall(vim.api.nvim_win_close, win, true)
+	render_summary(buf, win, "NumRow — Session Complete", score, correct, misses)
 end
 
 function M.start()
