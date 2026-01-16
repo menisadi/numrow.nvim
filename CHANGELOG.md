@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.2.0 - 2026-01-16
+
+Changed
+- Scoring now awards attempt-based points per round and reports accuracy.
+
 ## 0.1.1 - 2026-01-15
 
 Changed
