@@ -1,10 +1,12 @@
 -- plugin/numrow.lua
+-- NOTE: This file is loaded automatically by Neovim when the plugin is installed.
+-- It defines a command to start the NumRow game.
 
 if vim.g.loaded_numrow == 1 then
-	return
+  return
 end
 vim.g.loaded_numrow = 1
 
 vim.api.nvim_create_user_command("NumRow", function()
-	require("numrow").start()
+  require("numrow").start()
 end, { desc = "Start NumRow keyboard training game" })

@@ -21,8 +21,12 @@ Options:
   win (table)                 Floating window options: width, height, border
 
 SCORING                                                *numrow-scoring*
-Each round awards points based on attempts: score.base minus score.penalty per
-extra attempt, clamped to score.min. The final screen shows accuracy as
-correct/attempts.
+There are two scoring metrics:
+  Points: Each round awards points based on:
+    score = base - penalty * mistakes
+    where mistakes is attempts - 1 (the correct attempt), and the result is
+    clamped to score.min.
+  Accuracy: correct/attempts.
 
 vim:tw=78:ts=8:ft=help:norl:
+
