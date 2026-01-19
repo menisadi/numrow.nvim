@@ -97,7 +97,6 @@ end
 --@param distance number Distance from correct key
 --@return string Feedback label
 local function warm_label(distance)
-  -- simple buckets; tweak however you like
   if distance == 0 then
     return "Correct!"
   elseif distance == 1 then
