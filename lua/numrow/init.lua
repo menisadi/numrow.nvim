@@ -43,6 +43,7 @@ local function center_win_opts(width, height, border)
     width = width,
     height = height,
     col = math.floor((cols - width) / 2),
+    -- TODO: Should we make this deal with cmdheight=0?
     -- Subtract 1 to keep the window off the cmdline (assumes cmdheight=1)
     row = math.floor((lines - height) / 2) - 1,
     style = "minimal",
@@ -108,6 +109,9 @@ local function warm_label(distance)
   end
 end
 
+-- Feedback label generators for offset mode
+--@param delta number Signed distance from correct key
+--@return string feedback label
 local function offset_label(delta)
   local n = math.abs(delta)
   if n == 0 then
@@ -118,6 +122,10 @@ local function offset_label(delta)
   return ("You were %d %s to the %s."):format(n, key_word, dir)
 end
 
+-- Calculates score for a round
+--@param score_cfg table Scoring configuration
+--@param attempts number Number of attempts taken
+--@return number Points awarded for the round
 local function score_for_attempts(score_cfg, attempts)
   local cfg = score_cfg or {}
   local base = cfg.base or 10
@@ -127,15 +135,22 @@ local function score_for_attempts(score_cfg, attempts)
   return math.max(min_points, points)
 end
 
+-- Calculates accuracy
+--@param correct number Number of correct attempts
+--@param misses number Number of missed attempts
+--@return number, number Accuracy percentage and total attempts
 local function accuracy_stats(correct, misses)
   local attempts = correct + misses
   if attempts == 0 then
     return 0, attempts
   end
+  -- NOTE: There is no built-in round function in Lua
   local accuracy = math.floor((correct / attempts) * 100 + 0.5)
   return accuracy, attempts
 end
 
+-- Renders the main menu
+--@param buf number Buffer handle
 local function render_menu(buf)
   set_lines(buf, {
     "NumRow",
@@ -148,10 +163,16 @@ local function render_menu(buf)
   })
 end
 
+-- Wrapper for getcharstr with error handling
+-- Used to get a single keypress from the user
+--@return string|nil Pressed key as string, or nil on error
 local function getchar_str()
+  -- Force redraw to ensure prompt is visible
+  -- Without this, sometimes the prompt doesn't show up before getcharstr
   vim.cmd("redraw")
   local ok, ch = pcall(vim.fn.getcharstr)
   if not ok then
+    -- Converting 'ch' to string just in case it's nil or another type
     vim.notify(("NumRow: getcharstr failed: %s"):format(tostring(ch)), vim.log.levels.WARN)
     return nil
   end
