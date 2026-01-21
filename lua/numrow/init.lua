@@ -179,6 +179,8 @@ local function getchar_str()
   return ch
 end
 
+--@param ch string Pressed key
+--@return boolean True if the key is Escape, false otherwise
 local function is_esc(ch)
   return ch == "\027" -- ESC
 end
@@ -196,9 +198,13 @@ local function render_summary(buf, win, title, score, correct, misses)
   })
 
   getchar_str()
+  -- true - force close without prompt
   pcall(vim.api.nvim_win_close, win, true)
 end
 
+-- Main game loop for symbol locator mode
+--@param cfg table Configuration table
+--@return nil
 local function run_symbol_locator(cfg)
   math.randomseed(os.time())
 
@@ -296,23 +302,31 @@ function M.start()
 
   while true do
     local ch = getchar_str()
+    -- Handle quit
     if not ch or is_esc(ch) then
       pcall(vim.api.nvim_win_close, win, true)
       return
     end
 
     if ch == "1" then
+      -- Close menu window
       pcall(vim.api.nvim_win_close, win, true)
+      -- Start symbol locator with offset feedback
       run_symbol_locator(vim.tbl_deep_extend("force", cfg, { feedback = "offset" }))
       return
     elseif ch == "2" then
       pcall(vim.api.nvim_win_close, win, true)
+      -- Start symbol locator with warm feedback
       run_symbol_locator(vim.tbl_deep_extend("force", cfg, { feedback = "warm" }))
       return
     end
   end
 end
 
+-- Setup function to override default configuration
+-- User can call this from their config
+--@param opts table User-provided configuration table
+--@return nil
 function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", M.config, opts or {})
 end
