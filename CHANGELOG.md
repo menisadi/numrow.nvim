@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.2.1 - 2026-01-22
+Changed
+- End of session screen allows to start a new one (or quit)
+
 ## 0.2.0 - 2026-01-16
 
 Changed
