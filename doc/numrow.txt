@@ -27,6 +27,7 @@ There are two scoring metrics:
     where mistakes is attempts - 1 (the correct attempt), and the result is
     clamped to score.min.
   Accuracy: correct/attempts.
+After a session, the summary screen shows score/accuracy and lets you restart,
+return to the menu, or quit.
 
 vim:tw=78:ts=8:ft=help:norl:
-

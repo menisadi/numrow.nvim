@@ -34,4 +34,4 @@ require("numrow").setup({
 ### Notes
 
 * Defaults assume a US keyboard layout for number-row symbols.
-* Scoring awards attempt-based points per round and shows accuracy at the end.
+* End screen shows score/accuracy and lets you decide if you want to play again.

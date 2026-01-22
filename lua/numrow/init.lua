@@ -185,7 +185,7 @@ local function is_esc(ch)
   return ch == "\027" -- ESC
 end
 
-local function render_summary(buf, win, title, score, correct, misses)
+local function render_summary(buf, title, score, correct, misses)
   local accuracy, attempts = accuracy_stats(correct, misses)
   set_lines(buf, {
     title,
@@ -194,12 +194,19 @@ local function render_summary(buf, win, title, score, correct, misses)
     ("Accuracy: %d%% (%d/%d)"):format(accuracy, correct, attempts),
     ("Misses: %d"):format(misses),
     "",
-    "Press any key to close.",
+    "(1) New game (2) Back to main menu (3) Close",
   })
 
-  getchar_str()
-  -- true - force close without prompt
-  pcall(vim.api.nvim_win_close, win, true)
+  while true do
+    local ch = getchar_str()
+    if not ch or is_esc(ch) or ch == "3" then
+      return "quit"
+    elseif ch == "1" then
+      return "restart"
+    elseif ch == "2" then
+      return "menu"
+    end
+  end
 end
 
 -- Main game loop for symbol locator mode
@@ -210,53 +217,24 @@ local function run_symbol_locator(cfg)
 
   local buf, win = open_ui(cfg)
 
-  local score, misses, correct = 0, 0, 0
+  while true do
+    local score, misses, correct = 0, 0, 0
+    local ended_early = false
 
-  for round = 1, cfg.rounds do
-    local target_idx = math.random(1, #cfg.symbols)
-    local target = cfg.symbols[target_idx]
+    for round = 1, cfg.rounds do
+      local target_idx = math.random(1, #cfg.symbols)
+      local target = cfg.symbols[target_idx]
 
-    local feedback = ""
-    local round_attempts = 0
-    while true do
-      local header = ("NumRow — Symbol Locator   Round %d/%d   Score %d   Misses %d"):format(
-        round,
-        cfg.rounds,
-        score,
-        misses
-      )
-      local lines = {
-        header,
-        "",
-        ("Press: %s"):format(target),
-        "",
-        ("Feedback: %s"):format(feedback),
-        "",
-        "Tip: press <Esc> to quit",
-      }
-      set_lines(buf, lines)
-
-      local ch = getchar_str()
-      if not ch or is_esc(ch) then
-        render_summary(buf, win, "NumRow — Session Ended", score, correct, misses)
-        return
-      end
-
-      round_attempts = round_attempts + 1
-
-      if ch == target then
-        correct = correct + 1
-        local round_points = score_for_attempts(cfg.score, round_attempts)
-        score = score + round_points
-        feedback = ("✓ Correct! +%d"):format(round_points)
-        header = ("NumRow — Symbol Locator   Round %d/%d   Score %d   Misses %d"):format(
+      local feedback = ""
+      local round_attempts = 0
+      while true do
+        local header = ("NumRow — Symbol Locator   Round %d/%d   Score %d   Misses %d"):format(
           round,
           cfg.rounds,
           score,
           misses
         )
-        -- small “ack” redraw before next round (optional)
-        set_lines(buf, {
+        local lines = {
           header,
           "",
           ("Press: %s"):format(target),
@@ -264,60 +242,109 @@ local function run_symbol_locator(cfg)
           ("Feedback: %s"):format(feedback),
           "",
           "Tip: press <Esc> to quit",
-        })
-        vim.defer_fn(function() end, 60)
+        }
+        set_lines(buf, lines)
+
+        local ch = getchar_str()
+        if not ch or is_esc(ch) then
+          ended_early = true
+          break
+        end
+
+        round_attempts = round_attempts + 1
+
+        if ch == target then
+          correct = correct + 1
+          local round_points = score_for_attempts(cfg.score, round_attempts)
+          score = score + round_points
+          feedback = ("✓ Correct! +%d"):format(round_points)
+          header = ("NumRow — Symbol Locator   Round %d/%d   Score %d   Misses %d"):format(
+            round,
+            cfg.rounds,
+            score,
+            misses
+          )
+          -- small “ack” redraw before next round (optional)
+          set_lines(buf, {
+            header,
+            "",
+            ("Press: %s"):format(target),
+            "",
+            ("Feedback: %s"):format(feedback),
+            "",
+            "Tip: press <Esc> to quit",
+          })
+          vim.defer_fn(function() end, 60)
+          break
+        end
+
+        local pressed_idx = tbl_index_of(cfg.symbols, ch)
+        if pressed_idx then
+          misses = misses + 1
+          local delta = pressed_idx - target_idx
+          local dist = math.abs(delta)
+
+          if cfg.feedback == "warm" then
+            feedback = warm_label(dist)
+          else
+            feedback = offset_label(delta)
+          end
+
+          if cfg.show_hint_on_miss then
+            local correct_digit = cfg.digits[target_idx] or "?"
+            feedback = feedback .. ("  (Correct: Shift+%s)"):format(correct_digit)
+          end
+        else
+          misses = misses + 1
+          feedback = ("That's not a number-row symbol (%s). Try again."):format(ch)
+        end
+      end
+
+      if ended_early then
         break
       end
+    end
 
-      local pressed_idx = tbl_index_of(cfg.symbols, ch)
-      if pressed_idx then
-        misses = misses + 1
-        local delta = pressed_idx - target_idx
-        local dist = math.abs(delta)
-
-        if cfg.feedback == "warm" then
-          feedback = warm_label(dist)
-        else
-          feedback = offset_label(delta)
-        end
-
-        if cfg.show_hint_on_miss then
-          local correct_digit = cfg.digits[target_idx] or "?"
-          feedback = feedback .. ("  (Correct: Shift+%s)"):format(correct_digit)
-        end
-      else
-        misses = misses + 1
-        feedback = ("That's not a number-row symbol (%s). Try again."):format(ch)
-      end
+    local title = ended_early and "NumRow — Session Ended" or "NumRow — Session Complete"
+    local action = render_summary(buf, title, score, correct, misses)
+    if action == "restart" then
+      -- loop to start a new session in the same mode
+    elseif action == "menu" then
+      pcall(vim.api.nvim_win_close, win, true)
+      return "menu"
+    else
+      pcall(vim.api.nvim_win_close, win, true)
+      return "quit"
     end
   end
-
-  render_summary(buf, win, "NumRow — Session Complete", score, correct, misses)
 end
 
 function M.start()
   local cfg = M.config
-  local buf, win = open_ui(cfg)
-  render_menu(buf)
-
   while true do
-    local ch = getchar_str()
-    -- Handle quit
-    if not ch or is_esc(ch) then
-      pcall(vim.api.nvim_win_close, win, true)
-      return
+    local buf, win = open_ui(cfg)
+    render_menu(buf)
+
+    local ch
+    while true do
+      ch = getchar_str()
+      -- Handle quit
+      if not ch or is_esc(ch) then
+        pcall(vim.api.nvim_win_close, win, true)
+        return
+      end
+
+      if ch == "1" or ch == "2" then
+        break
+      end
     end
 
-    if ch == "1" then
-      -- Close menu window
-      pcall(vim.api.nvim_win_close, win, true)
-      -- Start symbol locator with offset feedback
-      run_symbol_locator(vim.tbl_deep_extend("force", cfg, { feedback = "offset" }))
-      return
-    elseif ch == "2" then
-      pcall(vim.api.nvim_win_close, win, true)
-      -- Start symbol locator with warm feedback
-      run_symbol_locator(vim.tbl_deep_extend("force", cfg, { feedback = "warm" }))
+    -- Close menu window
+    pcall(vim.api.nvim_win_close, win, true)
+
+    local feedback = (ch == "1") and "offset" or "warm"
+    local action = run_symbol_locator(vim.tbl_deep_extend("force", cfg, { feedback = feedback }))
+    if action ~= "menu" then
       return
     end
   end
