@@ -35,7 +35,7 @@ local function tbl_index_of(tbl, val)
 end
 
 -- Used for positioning the game window in the middle of the screen.
-local function center_win_opts(width, height, border)
+local function center_win_opts(width, height, border, title)
   local cols = vim.o.columns
   local lines = vim.o.lines
   return {
@@ -48,6 +48,8 @@ local function center_win_opts(width, height, border)
     row = math.floor((lines - height) / 2) - 1,
     style = "minimal",
     border = border,
+    title = title,
+    title_pos = "center",
   }
 end
 
@@ -68,7 +70,7 @@ local function open_ui(cfg)
 
   -- open floating window
   -- true - enter the window after opening
-  local window_cfg = center_win_opts(cfg.win.width, cfg.win.height, cfg.win.border)
+  local window_cfg = center_win_opts(cfg.win.width, cfg.win.height, cfg.win.border, " NumRow ")
   local win = vim.api.nvim_open_win(buf, true, window_cfg)
   -- set window options
   -- no number column, no cursorline, no wrap, no signcolumn
@@ -153,8 +155,6 @@ end
 --@param buf number Buffer handle
 local function render_menu(buf)
   set_lines(buf, {
-    "NumRow",
-    "",
     "Pick a mode:",
     "  1) Symbol Locator (offset feedback)",
     "  2) Symbol Locator (warm feedback)",
@@ -228,7 +228,7 @@ local function run_symbol_locator(cfg)
       local feedback = ""
       local round_attempts = 0
       while true do
-        local header = ("NumRow — Symbol Locator   Round %d/%d   Score %d   Misses %d"):format(
+        local header = ("Round %d/%d   Score %d   Misses %d"):format(
           round,
           cfg.rounds,
           score,
@@ -258,12 +258,7 @@ local function run_symbol_locator(cfg)
           local round_points = score_for_attempts(cfg.score, round_attempts)
           score = score + round_points
           feedback = ("✓ Correct! +%d"):format(round_points)
-          header = ("NumRow — Symbol Locator   Round %d/%d   Score %d   Misses %d"):format(
-            round,
-            cfg.rounds,
-            score,
-            misses
-          )
+          header = ("Round %d/%d   Score %d   Misses %d"):format(round, cfg.rounds, score, misses)
           -- small “ack” redraw before next round (optional)
           set_lines(buf, {
             header,
@@ -305,7 +300,7 @@ local function run_symbol_locator(cfg)
       end
     end
 
-    local title = ended_early and "NumRow — Session Ended" or "NumRow — Session Complete"
+    local title = ended_early and "Session Ended" or "Session Complete"
     local action = render_summary(buf, title, score, correct, misses)
     if action == "restart" then
       -- loop to start a new session in the same mode
