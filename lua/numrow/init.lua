@@ -155,11 +155,11 @@ end
 --@param buf number Buffer handle
 local function render_menu(buf)
   set_lines(buf, {
-    ""
+    "",
     "Pick a mode:",
     "  1) Symbol Locator (offset feedback)",
     "  2) Symbol Locator (warm feedback)",
-    ""
+    "",
   })
   footer_line = "Press 1 or 2 to start. Press <Esc> to quit."
   local window_id = vim.api.nvim_get_current_win()
@@ -191,11 +191,11 @@ end
 local function render_summary(buf, title, score, correct, misses)
   local accuracy, attempts = accuracy_stats(correct, misses)
   set_lines(buf, {
-    ""
+    "",
     ("Final score: %d"):format(score),
     ("Accuracy: %d%% (%d/%d)"):format(accuracy, correct, attempts),
     ("Misses: %d"):format(misses),
-    ""
+    "",
   })
   footer_line = "(1) New game (2) Back to main menu (3) Close"
   local window_id = vim.api.nvim_get_current_win()
@@ -239,11 +239,11 @@ local function run_symbol_locator(cfg)
           misses
         )
         local lines = {
-          ""
+          "",
           ("Press: %s"):format(target),
           "",
           ("Feedback: %s"):format(feedback),
-          ""
+          "",
         }
         set_lines(buf, lines)
         footer_line = "Tip: press <Esc> to quit"
@@ -269,11 +269,11 @@ local function run_symbol_locator(cfg)
           header = ("Round %d/%d   Score %d   Misses %d"):format(round, cfg.rounds, score, misses)
           -- small “ack” redraw before next round (optional)
           set_lines(buf, {
-            ""
+            "",
             ("Press: %s"):format(target),
             "",
             ("Feedback: %s"):format(feedback),
-            ""
+            "",
           })
           footer_line = "Tip: press <Esc> to quit"
           local window_id = vim.api.nvim_get_current_win()
