@@ -159,10 +159,10 @@ local function render_menu(buf)
     "  1) Symbol Locator (offset feedback)",
     "  2) Symbol Locator (warm feedback)",
     "",
-    "Press 1 or 2 to start. Press <Esc> to quit.",
   })
+  footer_line = "Press 1 or 2 to start. Press <Esc> to quit.",
   local window_id = vim.api.nvim_get_current_win()
-  vim.api.nvim_win_set_config(window_id, { title = " NumRow - Main Menu " })
+  vim.api.nvim_win_set_config(window_id, { title = " NumRow - Main Menu ", footer = footer_line})
 end
 
 -- Wrapper for getcharstr with error handling
