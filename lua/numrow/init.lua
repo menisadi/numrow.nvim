@@ -158,7 +158,6 @@ local function render_menu(buf)
     "Pick a mode:",
     "  1) Symbol Locator (offset feedback)",
     "  2) Symbol Locator (warm feedback)",
-    "",
   })
   footer_line = "Press 1 or 2 to start. Press <Esc> to quit."
   local window_id = vim.api.nvim_get_current_win()
@@ -190,14 +189,13 @@ end
 local function render_summary(buf, title, score, correct, misses)
   local accuracy, attempts = accuracy_stats(correct, misses)
   set_lines(buf, {
-    title,
-    "",
     ("Final score: %d"):format(score),
     ("Accuracy: %d%% (%d/%d)"):format(accuracy, correct, attempts),
     ("Misses: %d"):format(misses),
-    "",
-    "(1) New game (2) Back to main menu (3) Close",
   })
+  footer_line = "(1) New game (2) Back to main menu (3) Close"
+  local window_id = vim.api.nvim_get_current_win()
+  vim.api.nvim_win_set_config(window_id, { title = " NumRow - " .. title, footer = footer_line })
 
   while true do
     local ch = getchar_str()
@@ -237,15 +235,17 @@ local function run_symbol_locator(cfg)
           misses
         )
         local lines = {
-          header,
-          "",
           ("Press: %s"):format(target),
           "",
           ("Feedback: %s"):format(feedback),
-          "",
-          "Tip: press <Esc> to quit",
         }
         set_lines(buf, lines)
+        footer_line = "Tip: press <Esc> to quit"
+        local window_id = vim.api.nvim_get_current_win()
+        vim.api.nvim_win_set_config(
+          window_id,
+          { title = " NumRow - " .. header, footer = footer_line }
+        )
 
         local ch = getchar_str()
         if not ch or is_esc(ch) then
@@ -263,14 +263,16 @@ local function run_symbol_locator(cfg)
           header = ("Round %d/%d   Score %d   Misses %d"):format(round, cfg.rounds, score, misses)
           -- small “ack” redraw before next round (optional)
           set_lines(buf, {
-            header,
-            "",
             ("Press: %s"):format(target),
             "",
             ("Feedback: %s"):format(feedback),
-            "",
-            "Tip: press <Esc> to quit",
           })
+          footer_line = "Tip: press <Esc> to quit"
+          local window_id = vim.api.nvim_get_current_win()
+          vim.api.nvim_win_set_config(
+            window_id,
+            { title = " NumRow - " .. header, footer = footer_line }
+          )
           vim.defer_fn(function() end, 60)
           break
         end
