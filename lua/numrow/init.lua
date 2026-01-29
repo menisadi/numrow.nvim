@@ -16,7 +16,7 @@ M.config = {
   },
   win = {
     width = 54,
-    height = 8,
+    height = 4,
     border = "rounded",
   },
 }
