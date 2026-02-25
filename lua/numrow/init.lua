@@ -161,7 +161,7 @@ local function render_menu(buf)
     "  2) Symbol Locator (warm feedback)",
     "",
   })
-  footer_line = "Press 1 or 2 to start. Press <Esc> to quit."
+  footer_line = "Press 1 or 2 to start. Press q or <Esc> to quit."
   local window_id = vim.api.nvim_get_current_win()
   vim.api.nvim_win_set_config(window_id, { title = " NumRow - Main Menu ", footer = footer_line })
 end
@@ -188,6 +188,12 @@ local function is_esc(ch)
   return ch == "\027" -- ESC
 end
 
+--@param ch string Pressed key
+--@return boolean True if the key should quit, false otherwise
+local function is_quit_key(ch)
+  return ch == "q" or is_esc(ch)
+end
+
 local function render_summary(buf, title, score, correct, misses)
   local accuracy, attempts = accuracy_stats(correct, misses)
   set_lines(buf, {
@@ -197,13 +203,13 @@ local function render_summary(buf, title, score, correct, misses)
     ("Misses: %d"):format(misses),
     "",
   })
-  footer_line = "(1) New game (2) Back to main menu (3) Close"
+  footer_line = "(1) New game (2) Back to main menu (3) Close (q to quit)"
   local window_id = vim.api.nvim_get_current_win()
   vim.api.nvim_win_set_config(window_id, { title = " NumRow - " .. title, footer = footer_line })
 
   while true do
     local ch = getchar_str()
-    if not ch or is_esc(ch) or ch == "3" then
+    if not ch or is_quit_key(ch) or ch == "3" then
       return "quit"
     elseif ch == "1" then
       return "restart"
@@ -246,7 +252,7 @@ local function run_symbol_locator(cfg)
           "",
         }
         set_lines(buf, lines)
-        footer_line = "Tip: press <Esc> to quit"
+        footer_line = "Tip: press q or <Esc> to quit"
         local window_id = vim.api.nvim_get_current_win()
         vim.api.nvim_win_set_config(
           window_id,
@@ -254,7 +260,7 @@ local function run_symbol_locator(cfg)
         )
 
         local ch = getchar_str()
-        if not ch or is_esc(ch) then
+        if not ch or is_quit_key(ch) then
           ended_early = true
           break
         end
@@ -275,7 +281,7 @@ local function run_symbol_locator(cfg)
             ("Feedback: %s"):format(feedback),
             "",
           })
-          footer_line = "Tip: press <Esc> to quit"
+          footer_line = "Tip: press q or <Esc> to quit"
           local window_id = vim.api.nvim_get_current_win()
           vim.api.nvim_win_set_config(
             window_id,
@@ -336,7 +342,7 @@ function M.start()
     while true do
       ch = getchar_str()
       -- Handle quit
-      if not ch or is_esc(ch) then
+      if not ch or is_quit_key(ch) then
         pcall(vim.api.nvim_win_close, win, true)
         return
       end
