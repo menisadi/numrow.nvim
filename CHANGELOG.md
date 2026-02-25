@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.2.3 - 2026-02-25
+
+Changed
+- Quit key handling now supports `q` (in addition to `<Esc>`) across menu, rounds, and summary screens.
+- Summary screen quit action was simplified by removing `(3) Close` in favor of `(q) Quit`.
+
 ## 0.2.2 - 2026-01-29
 
 Changed

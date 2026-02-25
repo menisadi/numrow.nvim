@@ -203,13 +203,13 @@ local function render_summary(buf, title, score, correct, misses)
     ("Misses: %d"):format(misses),
     "",
   })
-  footer_line = "(1) New game (2) Back to main menu (3) Close (q to quit)"
+  footer_line = "(1) New game (2) Back to main menu (q) Quit"
   local window_id = vim.api.nvim_get_current_win()
   vim.api.nvim_win_set_config(window_id, { title = " NumRow - " .. title, footer = footer_line })
 
   while true do
     local ch = getchar_str()
-    if not ch or is_quit_key(ch) or ch == "3" then
+    if not ch or is_quit_key(ch) then
       return "quit"
     elseif ch == "1" then
       return "restart"
